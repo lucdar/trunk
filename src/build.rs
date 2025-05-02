@@ -13,6 +13,9 @@ use crate::common::{remove_dir_all, BUILDING, ERROR, SUCCESS};
 use crate::config::{rt::RtcBuild, types::WsProtocol, STAGE_DIR};
 use crate::pipelines::HtmlPipeline;
 
+/// File system entries which will not be removed from the final directory
+const PRESERVED_ENTRIES: &[&str] = &[STAGE_DIR, ".git"];
+
 pub type BuildResult = Result<()>;
 
 /// A system used for building a Rust WASM app & bundling its assets.
@@ -167,8 +170,7 @@ impl BuildSystem {
         while let Some(entry) = entries.next().await {
             let entry = entry.context("error reading contents of final dist dir")?;
 
-            let preserved_entries = [STAGE_DIR, ".git"];
-            if preserved_entries.iter().any(|s| entry.file_name() == *s) {
+            if PRESERVED_ENTRIES.iter().any(|s| entry.file_name() == *s) {
                 continue;
             }
 
